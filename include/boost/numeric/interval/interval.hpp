@@ -10,10 +10,10 @@
 #ifndef BOOST_NUMERIC_INTERVAL_INTERVAL_HPP
 #define BOOST_NUMERIC_INTERVAL_INTERVAL_HPP
 
+#include <boost/numeric/interval/detail/interval_prototype.hpp>
 #include <stdexcept>
 #include <string>
 #include <type_traits> // we need std::enable_if for interval-from-value constructor
-#include <boost/numeric/interval/detail/interval_prototype.hpp>
 
 namespace boost
 {
@@ -23,14 +23,11 @@ namespace boost
     namespace interval_lib
     {
 
-      class comparison_error
-          : public std::runtime_error
+      class comparison_error : public std::runtime_error
       {
       public:
         comparison_error()
-            : std::runtime_error("boost::interval: uncertain comparison")
-        {
-        }
+            : std::runtime_error("boost::interval: uncertain comparison") {}
       };
 
     } // namespace interval_lib
@@ -55,16 +52,18 @@ namespace boost
 
       interval();
       interval(T const &v);
-
-      template <class U, std::enable_if<std::is_convertible<U, T>::value, bool>::type = true>
-      interval(U const &v);
+      template <class T1, std::enable_if<std::is_convertible<T1, T>::value, bool>::type = true>
+      interval(T1 const &v);
 
       interval(T const &l, T const &u);
       template <class T1, class T2>
       interval(T1 const &l, T2 const &u);
       interval(interval<T, Policies> const &r);
+      interval(interval<T, Policies> &&r);
       template <class Policies1>
       interval(interval<T, Policies1> const &r);
+      template <class Policies1>
+      interval(interval<T, Policies1> &&r);
       template <class T1, class Policies1>
       interval(interval<T1, Policies1> const &r);
 
@@ -201,8 +200,22 @@ namespace boost
     }
 
     template <class T, class Policies>
+    inline interval<T, Policies>::interval(interval<T, Policies> &&r) : low(r.lower()), up(r.upper())
+    {
+    }
+
+    template <class T, class Policies>
     template <class Policies1>
     inline interval<T, Policies>::interval(interval<T, Policies1> const &r) : low(r.lower()), up(r.upper())
+    {
+      typedef typename Policies1::checking checking1;
+      if (checking1::is_empty(r.lower(), r.upper()))
+        set_empty();
+    }
+
+    template <class T, class Policies>
+    template <class Policies1>
+    inline interval<T, Policies>::interval(interval<T, Policies1> &&r) : low(r.lower()), up(r.upper())
     {
       typedef typename Policies1::checking checking1;
       if (checking1::is_empty(r.lower(), r.upper()))
