@@ -52,7 +52,7 @@ namespace boost
 
       interval();
       interval(T const &v);
-      template <class T1, std::enable_if<std::is_convertible<T1, T>::value, bool>::type = true>
+      template <class T1, std::enable_if_t<std::is_convertible<T1, T>::value, bool> = true>
       interval(T1 const &v);
 
       interval(T const &l, T const &u);
@@ -160,7 +160,7 @@ namespace boost
     }
 
     template <class T, class Policies>
-    template <class U, std::enable_if<std::is_convertible<U, T>::value, bool>::type>
+    template <class U, std::enable_if_t<std::is_convertible<U, T>::value, bool>>
     inline interval<T, Policies>::interval(U const &v)
     {
       if (checking::is_nan(v))
